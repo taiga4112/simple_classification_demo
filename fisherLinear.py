@@ -1,9 +1,30 @@
 # coding: utf-8
+import os
+import sys
 import cv2
 import numpy as np
 import math
 
-target_file = "IMG_1054.jpg" # targetファイル
+target_folder = "./"
+final_output_file_name = "result.jpg"
+
+def get_newest_file(target_folder):
+    # jpgファイルリストの作成
+    jpg_file_list = []
+    for x in os.listdir(target_folder):
+        if os.path.isfile(target_folder + x):
+            if x[-4:] == ".jpg" or x[-4:] == ".JPG":
+                if x != final_output_file_name:
+                    jpg_file_list.append(x)
+
+    file_name = ""
+    _create_epoc_time = 0
+    for jpg_file in jpg_file_list:
+        create_epoc_time = os.path.getatime(target_folder + jpg_file)
+        if create_epoc_time > _create_epoc_time:
+            file_name = jpg_file
+            _create_epoc_time = create_epoc_time
+    return file_name
 
 
 def get_point_list(_col_img,target):
@@ -53,6 +74,12 @@ def fishers_linear_discriminant(plist1,plist2):
     return a,b
 
 
+target_file = get_newest_file(target_folder)
+print target_file
+if target_file == "":
+    print 'There is no new JPG file in' + target_folder
+    sys.exit()
+
 # 入力画像をHSVチャンネルに分解
 col_img = cv2.imread(target_file, cv2.IMREAD_COLOR)
 img = cv2.cvtColor(col_img, cv2.COLOR_BGR2HSV)
@@ -84,8 +111,13 @@ yellow_point_list = get_point_list(col_img,Yellow)
 # フィッシャーの線形判別によって求めた境界の傾きと切片を求める
 a, b = fishers_linear_discriminant(green_point_list,yellow_point_list)
 
-p1 = (int(0),int(f(a,b,0)))
-p2 = (int(shape[1]),int(f(a,b,shape[1])))
+p1 = (int(0), int(f(a, b, 0)))
+p2 = (int(shape[1]), int(f(a, b, shape[1])))
 
 cv2.line(col_img,p1,p2,(0,0,255),50)
-cv2.imwrite("result.jpg", col_img)
+
+cv2.namedWindow('RESULT', cv2.WINDOW_NORMAL)
+cv2.imshow('RESULT', col_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+cv2.imwrite(final_output_file_name, col_img)
