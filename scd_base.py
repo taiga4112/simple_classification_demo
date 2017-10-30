@@ -68,7 +68,7 @@ def get_point_lists(col_img):
     # 色相(Hue)による色成分検出; +彩度(S)と明度(V)の閾値判定(パラメータ調整が必要)
     HF = 0.5  # OpenCVはhは1/2掛けで入力する
     green[((h > 70 * HF) & (h < 150 * HF)) & (s > 16) & (v > 10)] = 255  # 110±40°
-    yellow[((h > 30 * HF) & (h < 90 * HF)) & (s > 16) & (v > 10)] = 255  # 60±30°
+    yellow[((h > 30 * HF) & (h < 90 * HF)) & (s > 16) & (v > 5)] = 255  # 60±30°
 
     # 縮小処理によるノイズ除去(10x10円形カーネル) (適用箇所によってはparameter調整が必要かもしれない)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (50, 50))
