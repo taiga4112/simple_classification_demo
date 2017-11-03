@@ -16,8 +16,8 @@ def kernel(x, y):
 
 
 def svn_linear_discriminant(plist1, plist2):
-    X = vstack((plist1, plist2))
-    N = len(plist1) + len(plist2) # データ数
+    _X = vstack((plist1, plist2))
+    _N = len(plist1) + len(plist2)  # データ数
 
     # ラベルを作成
     t = []
@@ -28,44 +28,39 @@ def svn_linear_discriminant(plist1, plist2):
     t = array(t)
 
     # ラグランジュ乗数を二次計画法（Quadratic Programming）で求める
-    K = np.zeros((N,N))
-    for i in range(N):
-        for j in range(N):
-            K[i,j] = t[i]*t[j]*kernel(X[i],X[j])
-    Q = cvxopt.matrix(K)
-    p = cvxopt.matrix(-np.ones(N))  # -1がN個の列ベクトル
-    G = cvxopt.matrix(np.diag([-1.0] * N))  # 対角成分が-1のNxN行列
-    h = cvxopt.matrix(np.zeros(N))  # 0がN個の列ベクトル
-    A = cvxopt.matrix(t, (1, N))  # N個の教師信号が要素の行ベクトル（1xN）
+    _K = np.zeros((_N, _N))
+    for i in range(_N):
+        for j in range(_N):
+            _K[i, j] = t[i]*t[j]*kernel(_X[i],_X[j])
+    _Q = cvxopt.matrix(_K)
+    p = cvxopt.matrix(-np.ones(_N))  # -1がN個の列ベクトル
+    _G = cvxopt.matrix(np.diag([-1.0] * _N))  # 対角成分が-1のNxN行列
+    h = cvxopt.matrix(np.zeros(_N))  # 0がN個の列ベクトル
+    _A = cvxopt.matrix(t, (1, _N))  # N個の教師信号が要素の行ベクトル（1xN）
     b = cvxopt.matrix(0.0)  # 定数0.0
-    sol = cvxopt.solvers.qp(Q, p, G, h, A, b)  # 二次計画法でラグランジュ乗数aを求める
-    a = array(sol['x']).reshape(N)  # 'x'がaに対応する
+    sol = cvxopt.solvers.qp(_Q, p, _G, h, _A, b)  # 二次計画法でラグランジュ乗数aを求める
+    a = array(sol['x']).reshape(_N)  # 'x'がaに対応する
     print a
 
     # サポートベクトルのインデックスを抽出
-    S = []
+    _S = []
     for i in range(len(a)):
         if a[i] < 0.0000001: continue
-        S.append(i)
+        _S.append(i)
 
     # wを計算
     w = np.zeros(2)
-    for n in S:
-        w += a[n] * t[n] * X[n]
+    for n in _S:
+        w += a[n] * t[n] * _X[n]
 
     # bを計算
-    sum = 0
-    for n in S:
+    _sum = 0
+    for n in _S:
         temp = 0
-        for m in S:
-            temp += a[m] * t[m] * kernel(X[n], X[m])
-        sum += (t[n] - temp)
-    b = sum / len(S)
-    print S, b
+        for m in _S:
+            temp += a[m] * t[m] * kernel(_X[n], _X[m])
+        _sum += (t[n] - temp)
+    b = _sum / len(_S)
+    print _S, b
 
-    return w,b
-
-
-if __name__ == "__main__":
-    print 'a'
-
+    return w, b

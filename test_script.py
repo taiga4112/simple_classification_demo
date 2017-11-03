@@ -19,10 +19,12 @@ import svmLinear
 #     sys.exit()
 
 
-target_file = "IMG_1053.jpg"
+target_file = "IMG_1059.jpg"
 
 col_img = cv2.imread(target_file, cv2.IMREAD_COLOR)  # 画像から緑と黄の円がある場所の座標を取得する
 green_point_list, yellow_point_list = scd_base.get_point_lists(col_img)
+
+print len(green_point_list),len(yellow_point_list)
 
 #########################################################################
 # フィッシャーの線形判別
@@ -34,9 +36,9 @@ scd_base.show_point_result(col_img, px, py)
 
 ##########################################################################
 # 線形SVM
-w, b = svmLinear.svn_linear_discriminant(green_point_list, yellow_point_list)
-px = np.linspace(int(0), int(col_img.shape[1]), 1000)
-py = [svmLinear.f(x, w, b) for x in px]
-scd_base.show_point_result(col_img, px, py)
+# w, b = svmLinear.svn_linear_discriminant(green_point_list, yellow_point_list)
+# px = np.linspace(int(0), int(col_img.shape[1]), 1000)
+# py = [svmLinear.f(x, w, b) for x in px]
+# scd_base.show_point_result(col_img, px, py)
 ##########################################################################
 

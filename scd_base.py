@@ -27,7 +27,7 @@ def get_newest_file(target_folder):
 
 
 def get_point_list(_col_img, target):
-    round_th = 0.8  # 円判定閾値
+    round_th = 0.5  # 円判定閾値
     point_list = []
     _, contours, _ = cv2.findContours(target, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
     for cnt in contours:
@@ -38,7 +38,7 @@ def get_point_list(_col_img, target):
         area0 = cv2.contourArea(cnt)
         # 面積比率から輪郭の"円形度"を推定
         if (1 - round_th) < area1 / area0 < (1 + round_th) and area1 > 10000.0:
-            cv2.circle(_col_img, (int(cx), int(cy)), int(radius), (0, 0, 0), 2)
+            # cv2.circle(_col_img, (int(cx), int(cy)), int(radius), (0, 0, 0), 5)
             print cx, cy, area1
             point_list.append([cx, cy])
     return point_list
@@ -64,8 +64,13 @@ def show_point_result(col_img,px,py):
 
 
 def get_point_lists(col_img):
+
+    # ガウシアンぼかし for ノイズ除去
+    col_img_blur = cv2.GaussianBlur(col_img, (15, 15), 0)
+    cv2.imwrite("input_blur.jpg",col_img_blur)
+
     # 入力画像をHSVチャンネルに分解
-    img = cv2.cvtColor(col_img, cv2.COLOR_BGR2HSV)
+    img = cv2.cvtColor(col_img_blur, cv2.COLOR_BGR2HSV)
     h = img[:, :, 0]
     s = img[:, :, 1]
     v = img[:, :, 2]
@@ -76,15 +81,15 @@ def get_point_lists(col_img):
 
     # 色相(Hue)による色成分検出; +彩度(S)と明度(V)の閾値判定(パラメータ調整が必要)
     HF = 0.5  # OpenCVはhは1/2掛けで入力する
-    green[((h > 70 * HF) & (h < 150 * HF)) & (s > 16) & (v > 10)] = 255  # 110±40°
-    yellow[((h > 30 * HF) & (h < 90 * HF)) & (s > 16) & (v > 5)] = 255  # 60±30°
+    green[((h > 70 * HF) & (h < 150 * HF)) & (s > 50) & (s < 255) & (v > 10) & (v < 90)] = 255  # 110±40°
+    yellow[((h > 30 * HF) & (h < 90 * HF)) & (s > 10) & (s < 100) & (v > 10)] = 255  # 60±30°
 
     # 縮小処理によるノイズ除去(10x10円形カーネル) (適用箇所によってはparameter調整が必要かもしれない)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (50, 50))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
     green = cv2.morphologyEx(green, cv2.MORPH_OPEN, kernel)
     yellow = cv2.morphologyEx(yellow, cv2.MORPH_OPEN, kernel)
 
     # 座標群を取得する
-    green_point_list = get_point_list(col_img, green)
-    yellow_point_list = get_point_list(col_img, yellow)
+    green_point_list = get_point_list(col_img_blur, green)
+    yellow_point_list = get_point_list(col_img_blur, yellow)
     return green_point_list, yellow_point_list
