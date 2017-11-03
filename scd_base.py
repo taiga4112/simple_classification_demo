@@ -1,6 +1,5 @@
 # coding: utf-8
 import os
-import sys
 import cv2
 import numpy as np
 import math
@@ -45,8 +44,18 @@ def get_point_list(_col_img, target):
     return point_list
 
 
-def show_result(col_img, p1, p2):
+def show_line_result(col_img, p1, p2):
     cv2.line(col_img, p1, p2, (0, 0, 255), 50)
+    cv2.namedWindow('RESULT', cv2.WINDOW_NORMAL)
+    cv2.imshow('RESULT', col_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    cv2.imwrite(final_output_file_name, col_img)
+
+
+def show_point_result(col_img,px,py):
+    for i in range(len(px)):
+        cv2.circle(col_img,(int(px[i]),int(py[i])), 10, (0, 0, 255), 10)
     cv2.namedWindow('RESULT', cv2.WINDOW_NORMAL)
     cv2.imshow('RESULT', col_img)
     cv2.waitKey(0)
